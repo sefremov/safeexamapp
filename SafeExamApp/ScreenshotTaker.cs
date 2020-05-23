@@ -19,7 +19,9 @@ namespace SafeExamApp {
                 catch { }
             }
             try {
-                return File.ReadAllBytes(fileName);
+                var data = File.ReadAllBytes(fileName);
+                File.Delete(fileName);
+                return data;
             }
             catch {
                 return null;

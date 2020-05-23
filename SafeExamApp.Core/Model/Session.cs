@@ -6,6 +6,7 @@ namespace SafeExamApp.Core.Model {
         public DateTime? EndDt { get; set; }
         public string Student { get; set; }
         public string Group { get; set; }
+        public string Subject { get; set; }
         public string FileName { get; set; }
     }
 }

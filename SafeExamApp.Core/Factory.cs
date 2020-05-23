@@ -15,5 +15,9 @@ namespace SafeExamApp.Core {
         public ISessionManager GetSessionManager() {
             return new SessionManager(new CryptoWriter());
         }
+
+        public IApplicationMonitor GetApplicationMonitor() {
+            return new ApplicationMonitor();
+        }
     }
 }

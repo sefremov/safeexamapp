@@ -124,5 +124,11 @@ namespace SafeExamApp.Core.Services {
         public byte[] MakeCloseSession() {
             return Encrypt(key, iv, bw => bw.Write(DateTime.UtcNow.Ticks));            
         }
+
+        public byte[] MakeSignature(byte[] data) {
+            using(var hmac = new HMACSHA256(key)) {
+                return hmac.ComputeHash(data);                
+            }
+        }
     }
 }

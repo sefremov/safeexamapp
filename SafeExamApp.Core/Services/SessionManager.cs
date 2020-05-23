@@ -15,6 +15,7 @@ namespace SafeExamApp.Core.Services {
 
         private const string SessionDirectory = "sessions";
         private ICryptoWriter cryptoWriter;
+        private Session activeSession;
         
         public SessionManager(ICryptoWriter cryptoWriter) {
             this.cryptoWriter = cryptoWriter;
@@ -48,6 +49,7 @@ namespace SafeExamApp.Core.Services {
             int index = 0;
             do {
                 index++;
+                
                 session.FileName = Path.Combine(SessionDirectory, $"{index}.dat");
             } while(File.Exists(session.FileName));            
             
@@ -95,6 +97,7 @@ namespace SafeExamApp.Core.Services {
                 if(block.Marker != BeginSessionMarker)
                     throw new InvalidFormatException();
                 cryptoWriter.InitFromExisting(block.Data);
+                activeSession = session;
             }
         }
 
@@ -105,8 +108,8 @@ namespace SafeExamApp.Core.Services {
             }
         }
 
-        public void WriteApplicationRecord(Session session, string appName) {
-            using (var fs = new FileStream(session.FileName, FileMode.Append)) {
+        public void WriteApplicationRecord(string appName) {
+            using (var fs = new FileStream(activeSession.FileName, FileMode.Append)) {
                 WriteBlock(fs, AppRecordMarker, cryptoWriter.MakeApplicationRecord(appName));
             }
         }

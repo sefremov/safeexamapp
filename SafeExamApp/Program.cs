@@ -2,6 +2,7 @@
 using SafeExamApp.Core.Interfaces;
 using SafeExamApp.Core.Model;
 using System;
+using System.Timers;
 
 namespace SafeExamApp {
     class Program {
@@ -47,20 +48,25 @@ namespace SafeExamApp {
         }
 
         static void Main(string[] args) {
-
             var sessionManager = Factory.Instance.GetSessionManager();
             var taker = new ScreenshotTaker();
 
+            var appMonitor = Factory.Instance.GetApplicationMonitor();
+            appMonitor.OnActiveWindowChanged += windowTitle => sessionManager.WriteApplicationRecord(windowTitle);
+
+            var timer = new Timer();
+            timer.Interval = 1000;
+            timer.Elapsed += (o, args) => appMonitor.CheckActiveApplication();
+            
             var screenShot = taker.TakeScreenshot();
             if (screenShot == null) {
                 Console.WriteLine("Essential functionality is limited. Cannot start the program");
                 return;
             }
 
-
             var sessions = sessionManager.GetOpenSessions();
             
-            Session session = null;
+            Session session = null;            
 
             if (sessions.Count > 0) {
                 Console.WriteLine("Choose session to resume: ");

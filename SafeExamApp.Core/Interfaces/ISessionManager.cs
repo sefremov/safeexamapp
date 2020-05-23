@@ -7,5 +7,6 @@ namespace SafeExamApp.Core.Interfaces {
         void ResumeSession(Session session);
         void CreateNewSession(Session session);
         void CompleteSession(Session session);
+        void WriteApplicationRecord(string appRecord);
     }
 }
