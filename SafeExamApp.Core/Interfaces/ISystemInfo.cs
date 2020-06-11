@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace SafeExamApp.Core.Interfaces {
-    interface ISystemInfo {
+    public interface ISystemInfo {
         string Get();
     }
 }

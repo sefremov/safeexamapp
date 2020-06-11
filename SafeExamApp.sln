@@ -5,7 +5,9 @@ VisualStudioVersion = 16.0.29911.84
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SafeExamApp", "SafeExamApp\SafeExamApp.csproj", "{A14B594F-60D9-4BA7-93E1-096778F4EC67}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SafeExamApp.Core", "SafeExamApp.Core\SafeExamApp.Core.csproj", "{7AAF02D5-904D-4F62-BCB4-8B78C4457FDF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SafeExamApp.Core", "SafeExamApp.Core\SafeExamApp.Core.csproj", "{7AAF02D5-904D-4F62-BCB4-8B78C4457FDF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SafeExamApp.Reader", "SafeExamApp.Reader\SafeExamApp.Reader.csproj", "{8154E1AB-BE22-4D0B-AFE1-E1590D90C293}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{7AAF02D5-904D-4F62-BCB4-8B78C4457FDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7AAF02D5-904D-4F62-BCB4-8B78C4457FDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7AAF02D5-904D-4F62-BCB4-8B78C4457FDF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8154E1AB-BE22-4D0B-AFE1-E1590D90C293}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8154E1AB-BE22-4D0B-AFE1-E1590D90C293}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8154E1AB-BE22-4D0B-AFE1-E1590D90C293}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8154E1AB-BE22-4D0B-AFE1-E1590D90C293}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -39,7 +39,7 @@ namespace SafeExamApp.Core.Services {
             else
                 active = GetActiveWindowTitleWin();
 
-            if (active != currentActive) {
+            if (!string.IsNullOrWhiteSpace(active) && active != currentActive) {
                 OnActiveWindowChanged?.Invoke(active);
                 currentActive = active;
             }

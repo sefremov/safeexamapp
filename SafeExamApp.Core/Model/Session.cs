@@ -7,6 +7,9 @@ namespace SafeExamApp.Core.Model {
         public string Student { get; set; }
         public string Group { get; set; }
         public string Subject { get; set; }
+        public string HardwareInfo { get; set; }
         public string FileName { get; set; }
+
+        public SessionDetailedData DetailedData { get; set; }
     }
 }

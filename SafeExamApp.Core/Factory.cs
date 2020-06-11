@@ -12,12 +12,20 @@ namespace SafeExamApp.Core {
 
         private Factory() { }
 
-        public ISessionManager GetSessionManager() {
+        public ISessionWriter GetSessionManager() {
+            return new SessionManager(new CryptoWriter());
+        }
+
+        public ISessionReader GetSessionReader() {
             return new SessionManager(new CryptoWriter());
         }
 
         public IApplicationMonitor GetApplicationMonitor() {
             return new ApplicationMonitor();
+        }
+
+        public ISystemInfo GetSystemInfo() {
+            return new SystemInfo();
         }
     }
 }

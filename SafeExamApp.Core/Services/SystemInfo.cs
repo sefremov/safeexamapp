@@ -7,7 +7,7 @@ namespace SafeExamApp.Core.Services {
     class SystemInfo : ISystemInfo {
 
         public string Get() {
-            throw new NotImplementedException();
+            return "";
         }
     }
 }
