@@ -36,8 +36,10 @@ namespace SafeExamApp.Core.Services {
             string active;
             if(RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 active = GetActiveWindowTitleOSX();
-            else
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 active = GetActiveWindowTitleWin();
+            else
+                active = "";
 
             if (!string.IsNullOrWhiteSpace(active) && active != currentActive) {
                 OnActiveWindowChanged?.Invoke(active);

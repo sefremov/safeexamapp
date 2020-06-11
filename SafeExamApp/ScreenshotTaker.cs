@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace SafeExamApp {
     class ScreenshotTaker {
@@ -10,13 +11,15 @@ namespace SafeExamApp {
         public byte[] TakeScreenshot() {
             var fileName = Guid.NewGuid().ToString(); // Path.Combine(Path.GetTempPath(), );
             try {
-                TakeScreenshotWin(fileName);
+                if(RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                    TakeScreenshotOSX(fileName);
+                else if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    TakeScreenshotWin(fileName);
+                else
+                    TakeScreenshotLinux(fileName);
             }
             catch {
-                try {
-                    TakeScreenshotOSX(fileName);
-                }
-                catch { }
+                
             }
             try {
                 var data = File.ReadAllBytes(fileName);
@@ -41,6 +44,11 @@ namespace SafeExamApp {
 
         private void TakeScreenshotOSX(string fileName) {            
             ExecuteCaptureProcess("screencapture", $"-m -T0 -tpng -S -x {fileName}");
+        }
+
+        private void TakeScreenshotLinux(string fileName)
+        {
+            ExecuteCaptureProcess("scrot", $"-z {fileName}");
         }
 
 
