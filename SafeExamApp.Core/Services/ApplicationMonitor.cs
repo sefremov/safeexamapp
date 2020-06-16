@@ -38,6 +38,7 @@ namespace SafeExamApp.Core.Services
                     FileName = "/bin/sh",
                     Arguments = $"-c \"{MacOsExecutablePath} {MacOsScriptPath}\"",
                     RedirectStandardOutput = true,
+                    RedirectStandardError = true,
                     UseShellExecute = false,
                     CreateNoWindow = true,
                 }
@@ -46,8 +47,14 @@ namespace SafeExamApp.Core.Services
             process.Start();
 
             var output = process.StandardOutput;
+            var error = process.StandardError;
 
             process.WaitForExit();
+
+            if (!error.EndOfStream)
+            {
+                // TODO: raise event when macOS permissions are not set
+            }
 
             return output.ReadToEnd();
         }
