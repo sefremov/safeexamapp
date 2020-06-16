@@ -40,7 +40,7 @@ namespace SafeExamApp.Core.Services {
             }
             catch {
                 return false;
-            }            
+            }
         }
 
         private DataBlock ReadBlock(Stream stream) {
@@ -172,6 +172,9 @@ namespace SafeExamApp.Core.Services {
         }
 
         public void WriteScreenshot(byte[] screenshot) {
+            if(screenshot == null)
+                throw new ArgumentException("Empty screenshot taken");
+
             using(var fs = new FileStream(activeSession.FileName, FileMode.Open, FileAccess.ReadWrite)) {
                 WriteBlock(fs, cryptoWriter.Encrypt(bw => {
                     bw.Write(ScreenshotRecordMarker);

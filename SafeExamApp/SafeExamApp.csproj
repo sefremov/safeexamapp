@@ -3,6 +3,11 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Configurations>Debug;Release;TRIAL</Configurations>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TRIAL|AnyCPU'">
+    <DefineConstants>TRACE;TRIAL</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

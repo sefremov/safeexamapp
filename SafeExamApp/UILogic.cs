@@ -2,6 +2,8 @@
 using SafeExamApp.Core.Interfaces;
 using SafeExamApp.Core.Model;
 using System;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading;
 
 namespace SafeExamApp {
     class UILogic {
@@ -12,12 +14,20 @@ namespace SafeExamApp {
         RepeatedTimer pulseTimer;
         RepeatedTimer activeAppTimer;
         RepeatedTimer regularScreenshotTimer;
-
-        ISessionWriter sessionManager;
-        IApplicationMonitor appMonitor;
-        ScreenshotTaker taker;
+        
+        readonly ISessionWriter sessionManager;
+        readonly IApplicationMonitor appMonitor;
+        readonly ScreenshotTaker taker;
+        ISystemInfo systemInfo;
 
         Session session;
+
+        public UILogic() {
+            taker = new ScreenshotTaker();
+            sessionManager = Factory.Instance.GetSessionManager();
+            appMonitor = Factory.Instance.GetApplicationMonitor();
+            systemInfo = Factory.Instance.GetSystemInfo();
+        }
 
         string InputString(string hint) {
             while(true) {
@@ -91,7 +101,7 @@ namespace SafeExamApp {
             activeAppTimer.Elapsed += () => appMonitor.CheckActiveApplication();
 
             regularScreenshotTimer = new RepeatedTimer(ScreenshotInterval);
-            regularScreenshotTimer.Elapsed += () => sessionManager.WriteScreenshot(taker.TakeScreenshot());
+            regularScreenshotTimer.Elapsed += () => sessionManager.WriteScreenshot(null);
         }
 
         void InputSessionLocation() {
@@ -109,38 +119,52 @@ namespace SafeExamApp {
 
         void OnConsoleClose(object sender, EventArgs args) {
             sessionManager.PauseSession(session);
-            Console.WriteLine("Startexam is now closing. Please relaunch to continue your session");
+            Console.WriteLine("SafeExamApp is now closing. Please relaunch to continue your session");
             Console.ReadLine();
         }
 
         void OnActiveWindowChanged(string windowTitle) {
             sessionManager.WriteApplicationRecord(windowTitle);
         }
-      
-        public void Run() {
 
-            taker = new ScreenshotTaker();
-            var screenShot = taker.TakeScreenshot();            
+        bool CheckFunctionality() {
+            var screenShot = taker.TakeScreenshot();
 
             if(screenShot == null) {
                 Console.WriteLine("Essential functionality is unavailable (err code = -1). Cannot start the program");
-                return;
+                return false;
             }
 
-            var systemInfo = Factory.Instance.GetSystemInfo();
-            sessionManager = Factory.Instance.GetSessionManager();
+            var activeApp = appMonitor.GetActiveApplication();
+            if(string.IsNullOrEmpty(activeApp)) {
+                Console.WriteLine("Essential functionality is unavailable (err code = -2). Cannot start the program");
+                return false;
+            }
+
+            return true;
+        }
+
+        public void RunTrial() {
+            if(CheckFunctionality()) {
+                Console.WriteLine("Your computer has passed all required checks! You are ready to use SafeExamApp at the exam");
+                Console.ReadKey();
+            }
+        }
+
+        public void Run() {
+
+            if(!CheckFunctionality())
+                return;            
 
             InputSessionLocation();
-
-            appMonitor = Factory.Instance.GetApplicationMonitor();
+            
             appMonitor.OnActiveWindowChanged += OnActiveWindowChanged;
-
             InitTimers();            
 
             session = PrepareSession(sessionManager, systemInfo, out bool isNew);
 
             if(isNew) {
-                Console.WriteLine("Position the StartExam console on top of your canvas account page and press Enter to start the session");
+                Console.WriteLine("Position the SafeExamApp console on top of your canvas account page and press Enter to start the session");
                 Console.ReadLine();
                 sessionManager.WriteScreenshot(taker.TakeScreenshot());
             }
@@ -180,7 +204,9 @@ namespace SafeExamApp {
                     }
                 }
                 catch(Exception e) {
-                    // Console.WriteLine(e.StackTrace);
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine(e.Message);
+                    Console.ResetColor();
                 }
             }
 

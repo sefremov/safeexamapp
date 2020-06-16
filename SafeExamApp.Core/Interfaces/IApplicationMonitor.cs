@@ -5,5 +5,6 @@ namespace SafeExamApp.Core.Interfaces {
         event Action<string> OnActiveWindowChanged;
 
         void CheckActiveApplication();
+        string GetActiveApplication();
     }
 }
