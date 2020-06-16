@@ -1,9 +1,6 @@
 ﻿using SafeExamApp.Core.Model;
-using SafeExamApp.Core.Services;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace SafeExamApp.Core.Interfaces {
     public interface ICryptoWriter {
@@ -13,7 +10,7 @@ namespace SafeExamApp.Core.Interfaces {
         byte[] Encrypt(Action<BinaryWriter> onReadyFunc);
         T Decrypt<T>(byte[] data, Func<BinaryReader, T> onReadyFunc);
 
-        byte[] MakeSignature(byte[] data);
+        byte[] MakeSignature(byte[] data, byte[] hash);
         int GetHashSize();
     }
 }

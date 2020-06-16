@@ -4,8 +4,7 @@ using SafeExamApp.Core.Model;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net.Http.Headers;
-using System.Security.Cryptography;
+using System.Linq;
 
 namespace SafeExamApp.Core.Services {
     class SessionManager : ISessionWriter, ISessionReader {
@@ -65,7 +64,7 @@ namespace SafeExamApp.Core.Services {
         }
 
         private void WriteBlock(Stream stream, byte[] data) {
-            hash = cryptoWriter.MakeSignature(data);
+            hash = cryptoWriter.MakeSignature(data, hash);
             using (var bw = new BinaryWriter(stream)) {
                 bw.Seek(0, SeekOrigin.End);
 
@@ -193,13 +192,20 @@ namespace SafeExamApp.Core.Services {
             using(var fs = new FileStream(fileName, FileMode.Open)) {
                 if(fs.Length < cryptoWriter.GetHashSize())
                     throw new InvalidFormatException();
+                byte[] finalHash = new byte[cryptoWriter.GetHashSize()];
+                fs.Read(finalHash, 0, cryptoWriter.GetHashSize());
+
                 fs.Seek(cryptoWriter.GetHashSize(), SeekOrigin.Begin);
 
                 var data = ReadBlockNoDecode(fs);
 
-                var session = cryptoWriter.InitFromExisting(data, BeginSessionMarker);
+                var session = cryptoWriter.InitFromExisting(data, BeginSessionMarker);                
                 session.FileName = fileName;
-                var detailedData = new SessionDetailedData();                
+                var detailedData = new SessionDetailedData();
+                
+                byte[] hash = new byte[cryptoWriter.GetHashSize()];
+                hash = cryptoWriter.MakeSignature(data, hash);
+
                 while(fs.Position < fs.Length) {
                     var block = ReadBlock(fs);
                     switch(block.Marker) {
@@ -208,6 +214,9 @@ namespace SafeExamApp.Core.Services {
                             break;
                         case ResumeSessionMarker:
                             detailedData.ResumeRecords.Add(block.TimeStamp);
+                            break;
+                        case PulseMarker:
+                            detailedData.PulseRecords.Add(block.TimeStamp);
                             break;
                         case AppRecordMarker:
                             detailedData.ApplicationRecords.Add(cryptoWriter.Decrypt(block.Data, br =>
@@ -228,8 +237,10 @@ namespace SafeExamApp.Core.Services {
                             session.EndDt = block.TimeStamp;
                             break;
                     }
+                    hash = cryptoWriter.MakeSignature(block.Data, hash);
                 }
                 session.DetailedData = detailedData;
+                session.HashCorrect = hash.SequenceEqual(finalHash);
                 return session;
             }
         }

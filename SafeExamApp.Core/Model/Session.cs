@@ -10,6 +10,7 @@ namespace SafeExamApp.Core.Model {
         public string HardwareInfo { get; set; }
         public string FileName { get; set; }
 
+        public bool HashCorrect { get; set; }
         public SessionDetailedData DetailedData { get; set; }
     }
 }

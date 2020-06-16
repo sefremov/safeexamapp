@@ -5,7 +5,6 @@ using System.Text;
 using System.Linq;
 using SafeExamApp.Core.Interfaces;
 using SafeExamApp.Core.Model;
-using System.Net.Http.Headers;
 using SafeExamApp.Core.Exceptions;
 
 namespace SafeExamApp.Core.Services {
@@ -128,10 +127,14 @@ namespace SafeExamApp.Core.Services {
             }
         } 
 
-        public byte[] MakeSignature(byte[] data) {            
-            using(var hmac = new HMACSHA256(key)) {
-                return hmac.ComputeHash(data);
-            }            
+        public byte[] MakeSignature(byte[] data, byte[] hash) {
+            using(var ms = new MemoryStream(data.Length + hash.Length)) {
+                ms.Write(data, 0, data.Length);
+                ms.Write(hash, 0, hash.Length);
+                using(var hmac = new HMACSHA256(key)) {
+                    return hmac.ComputeHash(ms.ToArray());
+                }
+            }
         }
 
         public int GetHashSize() {
