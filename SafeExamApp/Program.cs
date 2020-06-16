@@ -2,7 +2,11 @@
     class Program {
 
         static void Main(string[] args) {
-            new UILogic().Run();            
+#if TRIAL
+            new UILogic().RunTrial();
+#else
+            new UILogic().Run();
+#endif
         }
        
     }

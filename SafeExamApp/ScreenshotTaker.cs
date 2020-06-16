@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 namespace SafeExamApp {
     class ScreenshotTaker {
 
-        public byte[] TakeScreenshot() {
+        public byte[] TakeScreenshot() {            
             var fileName = Guid.NewGuid().ToString(); // Path.Combine(Path.GetTempPath(), );
             try {
                 if(RuntimeInformation.IsOSPlatform(OSPlatform.OSX))

@@ -101,7 +101,7 @@ namespace SafeExamApp {
             activeAppTimer.Elapsed += () => appMonitor.CheckActiveApplication();
 
             regularScreenshotTimer = new RepeatedTimer(ScreenshotInterval);
-            regularScreenshotTimer.Elapsed += () => sessionManager.WriteScreenshot(taker.TakeScreenshot());
+            regularScreenshotTimer.Elapsed += () => sessionManager.WriteScreenshot(null);
         }
 
         void InputSessionLocation() {
@@ -119,7 +119,7 @@ namespace SafeExamApp {
 
         void OnConsoleClose(object sender, EventArgs args) {
             sessionManager.PauseSession(session);
-            Console.WriteLine("Startexam is now closing. Please relaunch to continue your session");
+            Console.WriteLine("SafeExamApp is now closing. Please relaunch to continue your session");
             Console.ReadLine();
         }
 
@@ -143,7 +143,14 @@ namespace SafeExamApp {
 
             return true;
         }
-      
+
+        public void RunTrial() {
+            if(CheckFunctionality()) {
+                Console.WriteLine("Your computer has passed all required checks! You are ready to use SafeExamApp at the exam");
+                Console.ReadKey();
+            }
+        }
+
         public void Run() {
 
             if(!CheckFunctionality())
@@ -157,7 +164,7 @@ namespace SafeExamApp {
             session = PrepareSession(sessionManager, systemInfo, out bool isNew);
 
             if(isNew) {
-                Console.WriteLine("Position the StartExam console on top of your canvas account page and press Enter to start the session");
+                Console.WriteLine("Position the SafeExamApp console on top of your canvas account page and press Enter to start the session");
                 Console.ReadLine();
                 sessionManager.WriteScreenshot(taker.TakeScreenshot());
             }
@@ -199,7 +206,7 @@ namespace SafeExamApp {
                 catch(Exception e) {
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine(e.Message);
-                    Console.ForegroundColor = ConsoleColor.Gray;
+                    Console.ResetColor();
                 }
             }
 
