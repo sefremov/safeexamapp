@@ -65,19 +65,22 @@ namespace SafeExamApp.Core.Services
 
         public void CheckActiveApplication()
         {
-            string active;
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                active = GetActiveWindowTitleMacOS();
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                active = GetActiveWindowTitleWin();
-            else
-                active = "";
+            string active = GetActiveApplication();            
 
             if (!string.IsNullOrWhiteSpace(active) && active != currentActive)
             {
                 OnActiveWindowChanged?.Invoke(active);
                 currentActive = active;
             }
+        }
+
+        public string GetActiveApplication() {
+            if(RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                return GetActiveWindowTitleMacOS();
+            else if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                return GetActiveWindowTitleWin();
+            else
+                return "";
         }
     }
 }

@@ -40,7 +40,7 @@ namespace SafeExamApp.Core.Services {
             }
             catch {
                 return false;
-            }            
+            }
         }
 
         private DataBlock ReadBlock(Stream stream) {
