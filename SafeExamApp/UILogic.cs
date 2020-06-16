@@ -2,8 +2,6 @@
 using SafeExamApp.Core.Interfaces;
 using SafeExamApp.Core.Model;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SafeExamApp {
     class UILogic {
@@ -93,10 +91,7 @@ namespace SafeExamApp {
             activeAppTimer.Elapsed += () => appMonitor.CheckActiveApplication();
 
             regularScreenshotTimer = new RepeatedTimer(ScreenshotInterval);
-            regularScreenshotTimer.Elapsed += () =>
-            {
-                sessionManager.WriteScreenshot(taker.TakeScreenshot());
-            };
+            regularScreenshotTimer.Elapsed += () => sessionManager.WriteScreenshot(taker.TakeScreenshot());
         }
 
         void InputSessionLocation() {
@@ -118,13 +113,17 @@ namespace SafeExamApp {
             Console.ReadLine();
         }
 
+        void OnActiveWindowChanged(string windowTitle) {
+            sessionManager.WriteApplicationRecord(windowTitle);
+        }
+      
         public void Run() {
 
             taker = new ScreenshotTaker();
             var screenShot = taker.TakeScreenshot();            
 
             if(screenShot == null) {
-                Console.WriteLine("Essential functionality is limited. Cannot start the program. Press any key");
+                Console.WriteLine("Essential functionality is unavailable (err code = -1). Cannot start the program");
                 return;
             }
 
@@ -134,7 +133,7 @@ namespace SafeExamApp {
             InputSessionLocation();
 
             appMonitor = Factory.Instance.GetApplicationMonitor();
-            appMonitor.OnActiveWindowChanged += windowTitle => sessionManager.WriteApplicationRecord(windowTitle);
+            appMonitor.OnActiveWindowChanged += OnActiveWindowChanged;
 
             InitTimers();            
 
@@ -160,23 +159,28 @@ namespace SafeExamApp {
 
             var prevShotTime = DateTime.MinValue;
             while(true) {
-                foreach(var t in timers)
-                    t.Poll();
+                try {
+                    foreach(var t in timers)
+                        t.Poll();
 
-                if(Console.KeyAvailable) {
-                    var key = Console.ReadKey(true);
-                    if(key.Key == ConsoleKey.Escape) {
-                        Console.WriteLine("Are you sure you want to complete your session (Y/N)?");
-                        if(Console.ReadKey(true).Key == ConsoleKey.Y) {
-                            sessionManager.CompleteSession(session);
-                            Console.WriteLine("Your session is now over. The location of the log file can be seen below");
-                            Console.WriteLine(session.FileName);
-                            Console.WriteLine("Don't forget to add this file to your submission archive!");
-                            break;
+                    if(Console.KeyAvailable) {
+                        var key = Console.ReadKey(true);
+                        if(key.Key == ConsoleKey.Escape) {
+                            Console.WriteLine("Are you sure you want to complete your session (Y/N)?");
+                            if(Console.ReadKey(true).Key == ConsoleKey.Y) {
+                                sessionManager.CompleteSession(session);
+                                Console.WriteLine("Your session is now over. The location of the log file can be seen below");
+                                Console.WriteLine(session.FileName);
+                                Console.WriteLine("Don't forget to add this file to your submission archive!");
+                                break;
+                            }
+                            else
+                                Console.WriteLine("Session is continuing");
                         }
-                        else
-                            Console.WriteLine("Session is continuing");
                     }
+                }
+                catch(Exception e) {
+                    // Console.WriteLine(e.StackTrace);
                 }
             }
 

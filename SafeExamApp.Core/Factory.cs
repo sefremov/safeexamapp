@@ -1,8 +1,5 @@
 ﻿using SafeExamApp.Core.Interfaces;
 using SafeExamApp.Core.Services;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SafeExamApp.Core {
     public class Factory {

@@ -12,6 +12,7 @@ namespace SafeExamApp.Reader {
             Console.WriteLine($"{session.Student}-{session.Group}-{session.Subject}");
             Console.WriteLine($"Started: {session.StartDt}");
             Console.WriteLine($"Ended: {session.EndDt}");
+            Console.WriteLine($"Pulses: {session.DetailedData.PulseRecords.Count}");
             if (session.DetailedData.PauseRecords.Count > 0) {
                 Console.WriteLine("Pause events: ");
                 foreach (var ev in session.DetailedData.PauseRecords)
