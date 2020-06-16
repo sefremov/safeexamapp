@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace SafeExamApp.Core.Services
@@ -31,6 +32,22 @@ namespace SafeExamApp.Core.Services
 
         private string GetActiveWindowTitleMacOS()
         {
+            using (var func = SHA512.Create())
+            {
+                using (var contents = File.Open(MacOsScriptPath, FileMode.Open))
+                {
+                    var hash = BitConverter
+                        .ToString(func.ComputeHash(contents))
+                        .Replace("-", "")
+                        .ToLowerInvariant();
+
+                    if (hash != MacOsScriptHash)
+                    {
+                        // TODO: raise proper exception if file was edited
+                    }
+                }
+            }
+
             var process = new Process()
             {
                 StartInfo = new ProcessStartInfo
@@ -58,6 +75,9 @@ namespace SafeExamApp.Core.Services
 
             return output.ReadToEnd();
         }
+
+        private const string MacOsScriptHash =
+            "81f11773b616958849506a396cbc454833e223661e4b2ea206c320d571395dea6aefbdc68d277468847236140d2218e9ba2a4846ec769b6e74a92f0a0fadd051";
 
         private const string MacOsExecutablePath = "/usr/bin/osascript";
 
