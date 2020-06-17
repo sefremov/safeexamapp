@@ -96,8 +96,8 @@ namespace SafeExamApp.Core.Services
 
             if (!string.IsNullOrWhiteSpace(active) && active != currentActive)
             {
-                OnActiveWindowChanged?.Invoke(active);
                 currentActive = active;
+                OnActiveWindowChanged?.Invoke(active);                
             }
         }
 

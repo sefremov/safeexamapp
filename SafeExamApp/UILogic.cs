@@ -2,14 +2,17 @@
 using SafeExamApp.Core.Interfaces;
 using SafeExamApp.Core.Model;
 using System;
-using System.Runtime.InteropServices.WindowsRuntime;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace SafeExamApp {
     class UILogic {
         const int PulseTimerInterval = 5000;
-        const int ScreenshotInterval = 30000;
+        const int ScreenshotInterval = 300000;
         const int ActiveAppInterval = 1000;
+
+        const int MinIntershotTimeSec = 10;     // Do not take more than 1 shot in 10 seconds
+        const int MinAppIntershotTimeSec = 300;    // Do not take more than 1 shot of a single application in 5 minutes
 
         RepeatedTimer pulseTimer;
         RepeatedTimer activeAppTimer;
@@ -21,6 +24,9 @@ namespace SafeExamApp {
         ISystemInfo systemInfo;
 
         Session session;
+
+        DateTime lastScreenShot = DateTime.MinValue;
+        Dictionary<string, DateTime> appScreenShots = new Dictionary<string, DateTime>();
 
         public UILogic() {
             taker = new ScreenshotTaker();
@@ -101,7 +107,7 @@ namespace SafeExamApp {
             activeAppTimer.Elapsed += () => appMonitor.CheckActiveApplication();
 
             regularScreenshotTimer = new RepeatedTimer(ScreenshotInterval);
-            regularScreenshotTimer.Elapsed += () => sessionManager.WriteScreenshot(null);
+            regularScreenshotTimer.Elapsed += () => TakeScreenshot(null);
         }
 
         void InputSessionLocation() {
@@ -123,8 +129,30 @@ namespace SafeExamApp {
             Console.ReadLine();
         }
 
+        void TakeScreenshot(string appName) {
+            if((DateTime.Now - lastScreenShot).TotalSeconds < MinIntershotTimeSec)
+                return;
+
+            if(!string.IsNullOrEmpty(appName)) {
+
+                // First time we are seeing this application open
+                var lastAppScreenshot = appScreenShots.GetValueOrDefault(appName, DateTime.MinValue);
+
+                if((DateTime.Now - lastAppScreenshot).TotalSeconds > MinAppIntershotTimeSec) {
+                    sessionManager.WriteScreenshot(taker.TakeScreenshot());
+                    lastScreenShot = DateTime.Now;
+                    appScreenShots[appName] = DateTime.Now;
+                }
+            }
+            else {
+                sessionManager.WriteScreenshot(taker.TakeScreenshot());
+                lastScreenShot = DateTime.Now;
+            }
+        }
+
         void OnActiveWindowChanged(string windowTitle) {
             sessionManager.WriteApplicationRecord(windowTitle);
+            TakeScreenshot(windowTitle);
         }
 
         bool CheckFunctionality() {
@@ -166,7 +194,7 @@ namespace SafeExamApp {
             if(isNew) {
                 Console.WriteLine("Position the SafeExamApp console on top of your canvas account page and press Enter to start the session");
                 Console.ReadLine();
-                sessionManager.WriteScreenshot(taker.TakeScreenshot());
+                TakeScreenshot(null);
             }
 
             var timers = new RepeatedTimer[] { activeAppTimer, pulseTimer, regularScreenshotTimer };
@@ -183,6 +211,7 @@ namespace SafeExamApp {
 
             var prevShotTime = DateTime.MinValue;
             while(true) {
+                Thread.Sleep(1000);
                 try {
                     foreach(var t in timers)
                         t.Poll();
