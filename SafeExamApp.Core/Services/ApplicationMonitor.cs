@@ -30,6 +30,36 @@ namespace SafeExamApp.Core.Services
             return null;
         }
 
+        private string ExecuteOsCommand(string executable, string parameters)
+        {
+            var process = new Process()
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "/bin/sh",
+                    Arguments = $"-c \"{executable} {parameters}\"",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                }
+            };
+
+            process.Start();
+
+            var output = process.StandardOutput;
+            var error = process.StandardError;
+
+            process.WaitForExit();
+
+            if (!error.EndOfStream)
+            {
+                // TODO: raise event when something is not ok
+            }
+
+            return output.ReadToEnd();
+        }
+
         private string GetActiveWindowTitleMacOS()
         {
             using (var func = SHA512.Create())
@@ -48,32 +78,12 @@ namespace SafeExamApp.Core.Services
                 }
             }
 
-            var process = new Process()
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "/bin/sh",
-                    Arguments = $"-c \"{MacOsExecutablePath} {MacOsScriptPath}\"",
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                }
-            };
+            return ExecuteOsCommand(MacOsExecutablePath, MacOsScriptPath);
+        }
 
-            process.Start();
-
-            var output = process.StandardOutput;
-            var error = process.StandardError;
-
-            process.WaitForExit();
-
-            if (!error.EndOfStream)
-            {
-                // TODO: raise event when macOS permissions are not set
-            }
-
-            return output.ReadToEnd();
+        private string GetActiveWindowsTitleUnix()
+        {
+            return ExecuteOsCommand(UnixExecutablePath, UnixExecutableParams);
         }
 
         private const string MacOsScriptHash =
@@ -85,6 +95,9 @@ namespace SafeExamApp.Core.Services
             Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!,
             @"Resources/GetActiveWindow.scrt"
         );
+
+        private const string UnixExecutablePath = "xdotool";
+        private const string UnixExecutableParams = "getactivewindow getwindowname";
 
         private string currentActive;
 
@@ -106,6 +119,8 @@ namespace SafeExamApp.Core.Services
                 return GetActiveWindowTitleMacOS();
             else if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 return GetActiveWindowTitleWin();
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                return GetActiveWindowsTitleUnix();
             else
                 return "";
         }
