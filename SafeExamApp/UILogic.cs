@@ -9,11 +9,10 @@ using System.Threading;
 namespace SafeExamApp {
     class UILogic {
         const int PulseTimerInterval = 5000;
-        const int ScreenshotInterval = 300000;
-        const int ActiveAppInterval = 1000;
+        const int ActiveAppInterval = 2000;
 
-        const int MinIntershotTimeSec = 10;     // Do not take more than 1 shot in 10 seconds
-        const int MinAppIntershotTimeSec = 300;    // Do not take more than 1 shot of a single application in 5 minutes
+        const int MinIntershotTime = 180000;
+        const int MaxIntershotTime = 420000;
 
         RepeatedTimer pulseTimer;
         RepeatedTimer activeAppTimer;
@@ -25,9 +24,6 @@ namespace SafeExamApp {
         ISystemInfo systemInfo;
 
         Session session;
-
-        DateTime lastScreenShot = DateTime.MinValue;
-        Dictionary<string, DateTime> appScreenShots = new Dictionary<string, DateTime>();
 
         public UILogic() {
             taker = new ScreenshotTaker();
@@ -110,7 +106,7 @@ namespace SafeExamApp {
             activeAppTimer = new RepeatedTimer(ActiveAppInterval);
             activeAppTimer.Elapsed += () => appMonitor.CheckActiveApplication();
 
-            regularScreenshotTimer = new RepeatedTimer(ScreenshotInterval);
+            regularScreenshotTimer = new RepeatedRandomTimer(MinIntershotTime, MaxIntershotTime);
             regularScreenshotTimer.Elapsed += () => TakeScreenshot(null);
         }
 
@@ -134,29 +130,11 @@ namespace SafeExamApp {
         }
 
         void TakeScreenshot(string appName) {
-            if((DateTime.Now - lastScreenShot).TotalSeconds < MinIntershotTimeSec)
-                return;
-
-            if(!string.IsNullOrEmpty(appName)) {
-
-                // First time we are seeing this application open
-                var lastAppScreenshot = appScreenShots.GetValueOrDefault(appName, DateTime.MinValue);
-
-                if((DateTime.Now - lastAppScreenshot).TotalSeconds > MinAppIntershotTimeSec) {
-                    sessionManager.WriteScreenshot(taker.TakeScreenshot());
-                    lastScreenShot = DateTime.Now;
-                    appScreenShots[appName] = DateTime.Now;
-                }
-            }
-            else {
-                sessionManager.WriteScreenshot(taker.TakeScreenshot());
-                lastScreenShot = DateTime.Now;
-            }
+            sessionManager.WriteScreenshot(taker.TakeScreenshot());            
         }
 
         void OnActiveWindowChanged(string windowTitle) {
-            sessionManager.WriteApplicationRecord(windowTitle);
-            TakeScreenshot(windowTitle);
+            sessionManager.WriteApplicationRecord(windowTitle);            
         }
 
         void ErrorMessage(int errorCode) {
@@ -248,7 +226,7 @@ namespace SafeExamApp {
                 }
                 catch(Exception e) {
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine(e.Message);
+                    Console.WriteLine($"{DateTime.Now}: {e.Message}");
                     Console.ResetColor();
                 }
             }
