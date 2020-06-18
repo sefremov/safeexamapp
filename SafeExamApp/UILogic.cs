@@ -18,7 +18,7 @@ namespace SafeExamApp {
         RepeatedTimer pulseTimer;
         RepeatedTimer activeAppTimer;
         RepeatedTimer regularScreenshotTimer;
-        
+
         readonly ISessionWriter sessionManager;
         readonly IApplicationMonitor appMonitor;
         readonly ScreenshotTaker taker;
@@ -159,17 +159,27 @@ namespace SafeExamApp {
             TakeScreenshot(windowTitle);
         }
 
+        void ErrorMessage(int errorCode) {
+            Console.WriteLine($"Essential functionality is unavailable (err code = {errorCode}). Cannot start the program");
+        }
+
         bool CheckFunctionality() {
             var screenShot = taker.TakeScreenshot();
 
             if(screenShot == null) {
-                Console.WriteLine("Essential functionality is unavailable (err code = -1). Cannot start the program");
+                ErrorMessage(-1);
                 return false;
             }
 
-            var activeApp = appMonitor.GetActiveApplication();
-            if(string.IsNullOrEmpty(activeApp)) {
-                Console.WriteLine("Essential functionality is unavailable (err code = -2). Cannot start the program");
+            try {
+                var activeApp = appMonitor.GetActiveApplication();
+                if(string.IsNullOrEmpty(activeApp)) {
+                    ErrorMessage(-2);
+                    return false;
+                }
+            }
+            catch {
+                ErrorMessage(-3);
                 return false;
             }
 
@@ -186,12 +196,12 @@ namespace SafeExamApp {
         public void Run() {
 
             if(!CheckFunctionality())
-                return;            
+                return;
 
             InputSessionLocation();
-            
+
             appMonitor.OnActiveWindowChanged += OnActiveWindowChanged;
-            InitTimers();            
+            InitTimers();
 
             session = PrepareSession(sessionManager, systemInfo, out bool isNew);
 
@@ -228,7 +238,7 @@ namespace SafeExamApp {
                                 sessionManager.CompleteSession(session);
                                 Console.WriteLine("Your session is now over. The location of the log file can be seen below");
                                 Console.WriteLine(session.FileName);
-                                Console.WriteLine("Don't forget to add this file to your submission archive!");
+                                Console.WriteLine("Don't forget to add this file to your submission archive or upload it to a cloud storage!");
                                 break;
                             }
                             else
