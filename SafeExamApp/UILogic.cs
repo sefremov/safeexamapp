@@ -3,6 +3,7 @@ using SafeExamApp.Core.Interfaces;
 using SafeExamApp.Core.Model;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace SafeExamApp {
@@ -35,13 +36,16 @@ namespace SafeExamApp {
             systemInfo = Factory.Instance.GetSystemInfo();
         }
 
-        string InputString(string hint) {
+        bool StringNotEmpty(string input) => !string.IsNullOrWhiteSpace(input);
+        bool IsValidCourseName(string input) => input.ToLower().All(c => (c >= 'a' && c <= 'z') || c == ' ');
+
+        string InputString(string hint, Func<string, bool> check) {
             while(true) {
                 Console.Write(hint);
                 var input = Console.ReadLine();
-                if(!string.IsNullOrWhiteSpace(input))
+                if(check(input))
                     return input;
-                Console.WriteLine("Cannot be empty. Try again");
+                Console.WriteLine("Incorrect value. Try again");
             }
         }
 
@@ -61,9 +65,9 @@ namespace SafeExamApp {
 
         Session StartNewSession(ISystemInfo systemInfo) {
             Console.WriteLine("New session");
-            var student = InputString("Enter your name and surname: ");
-            var group = InputString("Enter your group: ");
-            var subject = InputString("Enter subject: ");
+            var student = InputString("Enter your name and surname: ", StringNotEmpty);
+            var group = InputString("Enter your group: ", StringNotEmpty);
+            var subject = InputString("Enter subject: ", IsValidCourseName);
             return new Session
             {
                 Student = student,
@@ -171,14 +175,14 @@ namespace SafeExamApp {
 
             return true;
         }
-
+#if TRIAL
         public void RunTrial() {
             if(CheckFunctionality()) {
                 Console.WriteLine("Your computer has passed all required checks! You are ready to use SafeExamApp at the exam");
                 Console.ReadKey();
             }
         }
-
+#else
         public void Run() {
 
             if(!CheckFunctionality())
@@ -242,5 +246,6 @@ namespace SafeExamApp {
             AppDomain.CurrentDomain.ProcessExit -= OnConsoleClose;
             Console.ReadLine();
         }
+#endif
     }
 }
