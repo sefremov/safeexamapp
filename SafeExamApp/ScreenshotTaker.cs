@@ -9,7 +9,7 @@ namespace SafeExamApp {
     class ScreenshotTaker {
 
         public byte[] TakeScreenshot() {            
-            var fileName = Guid.NewGuid().ToString(); // Path.Combine(Path.GetTempPath(), );
+            var fileName = Guid.NewGuid().ToString() + ".png";
             try {
                 if(RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                     TakeScreenshotOSX(fileName);
